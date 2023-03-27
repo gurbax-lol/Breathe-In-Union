@@ -1,31 +1,45 @@
 const circle = document.getElementById('circle');
 const instruction = document.getElementById('instruction');
-const inhaleTime = 4000;
-const holdTime = 7000;
-const exhaleTime = 8000;
-const cycleTime = inhaleTime + holdTime + exhaleTime;
 
-function updateCircle() {
-  const now = new Date().getTime();
-  const phaseTime = now % cycleTime;
+const inhaleDuration = 4000;
+const holdDuration = 7000;
+const exhaleDuration = 8000;
+const totalDuration = inhaleDuration + holdDuration + exhaleDuration;
 
-  if (phaseTime < inhaleTime) {
+function animate() {
+  const now = new Date();
+  const cyclePosition = now.getTime() % totalDuration;
+
+  if (cyclePosition < inhaleDuration) {
+    const progress = cyclePosition / inhaleDuration;
+    updateCircle(progress);
     instruction.textContent = 'Inhale';
-    setCircleStroke(phaseTime / inhaleTime);
-  } else if (phaseTime < inhaleTime + holdTime) {
+  } else if (cyclePosition < inhaleDuration + holdDuration) {
+    updateCircle(1);
     instruction.textContent = 'Hold';
-    setCircleStroke(1);
   } else {
+    const progress = (cyclePosition - inhaleDuration - holdDuration) / exhaleDuration;
+    updateCircle(1 - progress);
     instruction.textContent = 'Exhale';
-    setCircleStroke(1 - (phaseTime - inhaleTime - holdTime) / exhaleTime);
   }
+
+  requestAnimationFrame(animate);
 }
 
-function setCircleStroke(percent) {
-  const circumference = 2 * Math.PI * 90;
-  const offset = circumference * (1 - percent);
-  circle.querySelector('circle').style.strokeDasharray = `${circumference} ${circumference}`;
-  circle.querySelector('circle').style.strokeDashoffset = offset;
+function updateCircle(progress) {
+  const circleSize = 90;
+  const strokeWidth = 5;
+  const circleProgress = progress * 2 * Math.PI * circleSize;
+
+  circle.innerHTML = `
+    <circle
+      cx="100" cy="100" r="${circleSize}"
+      stroke="black" stroke-width="${strokeWidth}" fill="none"
+      stroke-dasharray="${circleProgress} ${2 * Math.PI * circleSize}"
+      stroke-dashoffset="${-circleProgress}"
+    />
+  `;
 }
 
-setInterval(updateCircle, 50);
+animate();
+
